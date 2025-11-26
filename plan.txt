@@ -1,1 +1,10 @@
 # What we need to do:
+
+1. Train model
+    a. train on notes
+    
+
+2. Deployment
+    a. 
+
+3. Further fine-tune model after deployment
