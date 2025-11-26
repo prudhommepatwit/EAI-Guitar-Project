@@ -11,7 +11,7 @@
     
     a.  pick a method for deployment
     
-    b.  
+    b.  make web deployment app
 
 
 3.  Further fine-tune model after deployment
