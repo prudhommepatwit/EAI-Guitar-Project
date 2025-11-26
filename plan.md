@@ -2,7 +2,7 @@
 
 1.  Train model
     
-    a.  train on notes
+    a.  train on notes dataset
 
 2.  Deployment
     
