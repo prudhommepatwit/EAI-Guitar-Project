@@ -7,5 +7,83 @@
 </head>
 <body>
     <h1>Note classification time</h1>
+    <div>
+        <button type="button" id="recordButton">Record Audio</button>
+        <h2>(Detected note here)</h2>
+    </div>
 </body>
 </html>
+
+<script>
+    let recording = false;
+    let stream = null;
+    let recorder;
+    let chunks = [];
+    document.getElementById("recordButton").addEventListener("click", toggleRecording);
+
+    async function toggleRecording(){
+        if(recording){
+            stopRecording();
+        }
+        else{
+            await startRecording();
+        }
+    }
+
+    async function startRecording(){
+        document.getElementById("recordButton").innerHTML = "Stop Recording";
+        recording = true;
+        try {
+            stream = await navigator.mediaDevices.getUserMedia({video: false, audio: true});
+            recorder = new MediaRecorder(stream);
+            recorder.ondataavailable = e => chunks.push(e.data);
+            recorder.onstop = (e) => {
+                const blob = new Blob(chunks, { type: "audio/webm" });  
+                chunks = [];
+                /*
+                // download
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = "recording.webm";
+                a.click();
+                URL.revokeObjectURL(url);
+                */
+                
+                audioToFlask(blob);
+
+                // blob represents recorded audio
+                // window.recordedBlob = blob;
+            };
+            recorder.start();
+        }
+        catch(err){
+            console.error("Error accessing microphone.",err);
+        }
+
+    }
+
+    function stopRecording(){
+        recorder.stop();
+        document.getElementById("recordButton").innerHTML = "Start Recording";
+        recording = false;
+
+        if(stream){
+            stream.getTracks().forEach(track => track.stop());
+            stream = null;
+        }
+    }
+
+    function audioToFlask(blob){
+        const formData = new FormData();
+        formData.append("audio", blob, "audio.webm")
+
+        fetch("/listen",{
+            method: "POST",
+            body: formData
+        })
+        .then(res => res.json())
+        .then(data => console.log("Server response:",data))
+        .catch(err => console.error("Error sending audio:",err));
+    }
+</script>
