@@ -1,8 +1,10 @@
-from transformers import AutoModelForSequenceClassification
-# communicate 
+# import keras_hub
+import tensorflow as tf
+import torch
+# communicate
 
-MODEL_PATH = "noteClassifier.keras"
-model = AutoModelForSequenceClassification.from_pretrained(MODEL_PATH)
+MODEL_PATH = "model_path"
+model = tf.keras.models.load_model(MODEL_PATH, custom_objects=None, compile=True)
 
 id_to_note = {
     0 : "A",
@@ -20,5 +22,13 @@ id_to_note = {
 
 }
 
-def noteClassify():
-    
+def noteClassify(userAudio):
+    inputs = userAudio
+
+    with torch.no_grad():
+        outputs = model(inputs)
+
+    predicted_id = torch.argmax(outputs.logits, dim=1).item()
+    predicted_note = id_to_note[predicted_id]
+
+    return predicted_note

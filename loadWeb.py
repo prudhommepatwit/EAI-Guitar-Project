@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, jsonify, url_for, redirect, f
 from flask_socketio import SocketIO, emit
 import webbrowser
 from threading import Timer
+from predict import noteClassify
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
@@ -18,9 +19,9 @@ def listen():
     with open("userAudio.webm", "wb") as f:
         f.write(userAudio)
 
-    # response = #classification method from the model running script(user_input)
+    response = noteClassify(userAudio)#classification method from the model running script(user_input)
 
-    # return render_template("index.html", response=response, user_input reference section)
+    return render_template("index.html", response=response) #user_input reference section)
 
     return jsonify({"note": "insertNotePlayedHere"})
 
