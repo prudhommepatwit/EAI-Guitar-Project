@@ -23,8 +23,6 @@ def listen():
 
     return render_template("index.html", response=response) #user_input reference section)
 
-    return jsonify({"note": "insertNotePlayedHere"})
-
 if __name__ == '__main__':
     Timer(1,lambda: webbrowser.open_new("http://127.0.0.1:5000/")).start()
     socketio.run(app)

@@ -3,7 +3,7 @@ import tensorflow as tf
 import torch
 # communicate
 
-MODEL_PATH = "model_path"
+MODEL_PATH = "noteClassifier.keras"
 model = tf.keras.models.load_model(MODEL_PATH, custom_objects=None, compile=True)
 
 id_to_note = {
