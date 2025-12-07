@@ -6,7 +6,7 @@ from pydub import AudioSegment
 # communicate
 
 MODEL_PATH = "C:/Users/School/OneDrive - Wentworth Institute of Technology/Documents/2025/Embedded AI/EAI-Guitar-Project/noteClassifier.keras"
-model = tf.keras.models.load_model(MODEL_PATH)
+model = tf.keras.models.load_model(MODEL_PATH, custom_objects=None, compile=True)
 
 id_to_note = {
     0 : "A",

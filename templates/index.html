@@ -15,47 +15,41 @@
 </html>
 
 <script>
+    let streaming = false;
     let recording = false;
     let stream = null;
     let recorder;
     let chunks = [];
-    document.getElementById("recordButton").addEventListener("click", toggleRecording);
+    let noiseTriggered = false;
+    let audioContext;
+    let analyser;
 
-    async function toggleRecording(){
-        if(recording){
-            stopRecording();
+    document.getElementById("recordButton").addEventListener("click", toggleStreaming);
+
+    async function toggleStreaming(){
+        if(streaming){
+            stopStreaming();
         }
         else{
-            await startRecording();
+            await startStreaming();
         }
     }
 
-    async function startRecording(){
+    async function startStreaming(){
         document.getElementById("recordButton").innerHTML = "Stop Recording";
-        recording = true;
+        streaming = true;
         try {
             stream = await navigator.mediaDevices.getUserMedia({video: false, audio: true});
-            recorder = new MediaRecorder(stream);
-            recorder.ondataavailable = e => chunks.push(e.data);
-            recorder.onstop = (e) => {
-                const blob = new Blob(chunks, { type: "audio/webm" });  
-                chunks = [];
-                /*
-                // download
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement("a");
-                a.href = url;
-                a.download = "recording.webm";
-                a.click();
-                URL.revokeObjectURL(url);
-                */
-                
-                audioToFlask(blob);
 
-                // blob represents recorded audio
-                // window.recordedBlob = blob;
-            };
-            recorder.start();
+            context = new AudioContext();
+            const source = context.createMediaStreamSource(stream);
+            
+            analyser = context.createAnalyser();
+            dataArray = new Uint8Array(analyser.frequencyBinCount);
+            
+            source.connect(analyser);
+            
+            monitorNoise();
         }
         catch(err){
             console.error("Error accessing microphone.",err);
@@ -63,10 +57,40 @@
 
     }
 
-    function stopRecording(){
-        recorder.stop();
+    function monitorNoise(){
+        if(!streaming) return;
+        analyser.getByteTimeDomainData(dataArray);
+
+            let maxAmplitude = 0;
+            for(let i = 0; i < dataArray.length; i++) {
+                const amplitude = Math.abs(dataArray[i] - 128) / 128;
+                if (amplitude > maxAmplitude) maxAmplitude = amplitude;
+            }
+            if (maxAmplitude > 0.5 && !recording) {
+                recording = true;
+                console.log("Recording for 2 seconds...");
+                recorder = new MediaRecorder(stream);
+                recorder.ondataavailable = e => chunks.push(e.data);
+                recorder.onstop = (e) => {
+                    console.log("Saving recording")
+                    const blob = new Blob(chunks, { type: "audio/webm" });  
+                    chunks = [];
+                    audioToFlask(blob);
+                    recording = false;
+                };
+                recorder.start();
+                setTimeout(() => {
+                    recorder.stop();
+                }, 2000);
+            }
+
+        requestAnimationFrame(monitorNoise);
+    }
+
+    function stopStreaming(){
+
         document.getElementById("recordButton").innerHTML = "Start Recording";
-        recording = false;
+        streaming = false;
 
         if(stream){
             stream.getTracks().forEach(track => track.stop());
