@@ -1,10 +1,12 @@
 # import keras_hub
 import tensorflow as tf
-import torch
+import numpy as np
+import librosa
+from pydub import AudioSegment
 # communicate
 
-MODEL_PATH = "model_path"
-model = tf.keras.models.load_model(MODEL_PATH, custom_objects=None, compile=True)
+MODEL_PATH = "C:/Users/School/OneDrive - Wentworth Institute of Technology/Documents/2025/Embedded AI/EAI-Guitar-Project/noteClassifier.keras"
+model = tf.keras.models.load_model(MODEL_PATH)
 
 id_to_note = {
     0 : "A",
@@ -22,13 +24,28 @@ id_to_note = {
 
 }
 
-def noteClassify(userAudio):
-    inputs = userAudio
+def convert_webm_to_wav(webm_path, wav_path):
+    """Convert the webm input to wav format"""
+    audio = AudioSegment.from_file(webm_path, format="webm")
+    audio.export(wav_path, format="wav")
+    return wav_path
 
-    with torch.no_grad():
-        outputs = model(inputs)
+def noteClassify(userAudioPath, target_sr=16000, max_len=16000):
+    y, sr = librosa.load(userAudioPath, sr=target_sr)
+    
+    if len(y) > max_len:
+        y = y[:max_len]
+    else:
+        y = np.pad(y, (0, max_len - len(y)), mode="constant")
 
-    predicted_id = torch.argmax(outputs.logits, dim=1).item()
-    predicted_note = id_to_note[predicted_id]
+    # Normalize
+    y = y / np.max(no.abs(y))
 
-    return predicted_note
+    inputs = np.expand_dims(y, axis=0)
+        
+    
+
+    outputs = model(inputs)
+    predicted_id = np.argmax(outputs, axis=1)[0]
+
+    return id_to_note[predicted_id]
