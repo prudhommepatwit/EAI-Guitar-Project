@@ -11,6 +11,7 @@
         <button id="recordButton">Record Audio</button>
         <div id="loading" style="display:none;">
             Processing audio..
+        </div>
     </div>
     <div id="result"></div>
 </body>
@@ -63,7 +64,6 @@
     }
 
     function monitorNoise(){
-        console.log("monitorNoise() triggered")
         if(!streaming) return;
         analyser.getByteTimeDomainData(dataArray);
 
@@ -129,7 +129,7 @@
         })
         .catch(err => {
             document.getElementById("loading").style.display = "none";
-            ducument.getElementById("result").innerText - "Error: " + err;
+            document.getElementById("result").innerText - "Error: " + err;
             console.error("Error sending audio:",err);
         });
     }
