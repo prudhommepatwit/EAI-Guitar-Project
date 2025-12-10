@@ -8,9 +8,11 @@
 <body>
     <h1>Note classification time</h1>
     <div>
-        <button type="button" id="recordButton">Record Audio</button>
-        <h2>(Detected note here)</h2>
+        <button id="recordButton">Record Audio</button>
+        <div id="loading" style="display:none;">
+            Processing audio..
     </div>
+    <div id="result"></div>
 </body>
 </html>
 
@@ -27,10 +29,13 @@
     document.getElementById("recordButton").addEventListener("click", toggleStreaming);
 
     async function toggleStreaming(){
+        console.log("toggleStreaming called, streaming =", streaming);
         if(streaming){
+            console.log("stopping stream")
             stopStreaming();
         }
         else{
+            console.log("starting stream")
             await startStreaming();
         }
     }
@@ -48,7 +53,7 @@
             dataArray = new Uint8Array(analyser.frequencyBinCount);
             
             source.connect(analyser);
-            
+            console.log("calling monitorNoise()")
             monitorNoise();
         }
         catch(err){
@@ -58,6 +63,7 @@
     }
 
     function monitorNoise(){
+        console.log("monitorNoise() triggered")
         if(!streaming) return;
         analyser.getByteTimeDomainData(dataArray);
 
@@ -66,7 +72,7 @@
                 const amplitude = Math.abs(dataArray[i] - 128) / 128;
                 if (amplitude > maxAmplitude) maxAmplitude = amplitude;
             }
-            if (maxAmplitude > 0.5 && !recording) {
+            if (maxAmplitude > 0.05 && !recording) {
                 recording = true;
                 console.log("Recording for 2 seconds...");
                 recorder = new MediaRecorder(stream);
@@ -75,6 +81,8 @@
                     console.log("Saving recording")
                     const blob = new Blob(chunks, { type: "audio/webm" });  
                     chunks = [];
+                    console.log("Blob type:", blob.type, "size:", blob.size);
+                    console.log("Calling audioToFlask with blob:", blob);
                     audioToFlask(blob);
                     recording = false;
                 };
@@ -99,15 +107,30 @@
     }
 
     function audioToFlask(blob){
+        console.log("audioToFlask() started");
         const formData = new FormData();
         formData.append("audio", blob, "audio.webm")
+
+        // show loading indicator
+        document.getElementById("loading").style.display = "block";
+        document.getElementById("result").innerText = "";
 
         fetch("/listen",{
             method: "POST",
             body: formData
         })
         .then(res => res.json())
-        .then(data => console.log("Server response:",data))
-        .catch(err => console.error("Error sending audio:",err));
+        .then(data => {
+            document.getElementById("loading").style.display = "none";
+
+            document.getElementById("result").innerText = "Predicted Note " + data.note;
+
+            console.log("Server response:",data);
+        })
+        .catch(err => {
+            document.getElementById("loading").style.display = "none";
+            ducument.getElementById("result").innerText - "Error: " + err;
+            console.error("Error sending audio:",err);
+        });
     }
 </script>

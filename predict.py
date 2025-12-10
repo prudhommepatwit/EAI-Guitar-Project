@@ -39,7 +39,7 @@ def noteClassify(userAudioPath, target_sr=16000, max_len=16000):
         y = np.pad(y, (0, max_len - len(y)), mode="constant")
 
     # Normalize
-    y = y / np.max(no.abs(y))
+    y = y / np.max(np.abs(y))
 
     inputs = np.expand_dims(y, axis=0)
         
