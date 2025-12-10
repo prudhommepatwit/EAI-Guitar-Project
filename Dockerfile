@@ -20,4 +20,4 @@ COPY . .
 ENV PORT=8080
 
 # Start the app with gunicorn
-CMD ["gunicorn", "--bind=0.0.0.0:8080", "app:app"]
+CMD exec gunicorn --worker-class geventwebsocket.gunicorn.workers.GeventWebSocketWorker -w 1 -b :$PORT app:app
