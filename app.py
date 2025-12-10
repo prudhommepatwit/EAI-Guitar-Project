@@ -35,6 +35,6 @@ def listen():
     return jsonify({"note": predicted_note}) #user_input reference section)
 
 if __name__ == '__main__':
-    Timer(1,lambda: webbrowser.open_new("http://127.0.0.1:5000/")).start()
+    Timer(1,lambda: webbrowser.open_new("http://127.0.0.1:8080/")).start()
     # socketio.run(app)
     socketio.run(app, debug=True)
