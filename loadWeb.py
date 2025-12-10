@@ -32,7 +32,7 @@ def listen():
     
     #classification method from the model running script(user_input)
     predicted_note = noteClassify(wav_path)
-    print("Detected note: ", predicted_note)
+    #print("Detected note: ", predicted_note)
     return jsonify({"Detected Note": predicted_note}) #user_input reference section)
 
 if __name__ == '__main__':
