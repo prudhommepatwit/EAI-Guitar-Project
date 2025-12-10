@@ -3,6 +3,7 @@ import tensorflow as tf
 import numpy as np
 import librosa
 from pydub import AudioSegment
+import noisereduce as nr
 # communicate
 
 MODEL_PATH = "noteClassifier.keras"
@@ -51,8 +52,14 @@ def convert_webm_to_wav(webm_path, wav_path):
     audio.export(wav_path, format="wav")
     return wav_path
 
+def reduce_noise(y, sr):
+    y_clean = nr.reduce_noise(y=y, sr=sr, stationary=True, prop_decrease=0.8)
+    return y_clean
+
+
 def noteClassify(userAudioPath, target_sr=16000, max_len=16000):
     y, sr = librosa.load(userAudioPath, sr=target_sr)
+    y = reduce_noise(y, sr)
     
     if len(y) > max_len:
         y = y[:max_len]
