@@ -5,7 +5,7 @@ import os
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
-socketio = SocketIO(app, async_mode="threading")
+socketio = SocketIO(app, async_mode = 'gevent')
 
 
 @app.route('/')
